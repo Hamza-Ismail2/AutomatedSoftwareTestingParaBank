@@ -73,5 +73,16 @@
     "state": "CA",
     "zipCode": "90210",
     "phone": "310-447-4121"
+  },
+  "contactInquiry": {
+    "name": "Test User",
+    "email": "test.user@example.com",
+    "phone": "555-0100",
+    "message": "I have a question about my account."
+  },
+  "loanRequest": {
+    "amount": "5000",
+    "downPayment": "500",
+    "fromAccount": "54321"
   }
 }

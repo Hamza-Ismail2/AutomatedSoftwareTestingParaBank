@@ -50,4 +50,20 @@ test.describe('Movement of Funds & Searches', () => {
     await findTransactionsPage.verifyResultsDisplayed();
     await screenshotHelper.captureStep(page, { name: 'find-by-date-range' });
   });
+
+  test('should complete transfer using alternate account pair', async ({ transferFundsPage, testData, page, screenshotHelper }) => {
+    const altTransfer = testData.transferFunds[1];
+    await transferFundsPage.open();
+    await transferFundsPage.transferFunds(altTransfer);
+    await transferFundsPage.verifyTransferSuccess();
+    await screenshotHelper.captureStep(page, { name: 'alternate-transfer-success' });
+  });
+
+  test('should find transactions by single date', async ({ findTransactionsPage, testData, page, screenshotHelper }) => {
+    const { accountId, byDate } = testData.findTransactions;
+    await findTransactionsPage.open();
+    await findTransactionsPage.findByDate(accountId, byDate);
+    await findTransactionsPage.verifyResultsDisplayed();
+    await screenshotHelper.captureStep(page, { name: 'find-by-single-date' });
+  });
 });

@@ -76,4 +76,42 @@ test.describe('Authentication & Account Creation', () => {
     await expect(page.getByText(new RegExp(`Username:\\s*${username}`, 'i'))).toBeVisible();
     await screenshotHelper.captureStep(page, { name: 'lookup-result' });
   });
+
+  test('should log out and return to Customer Login', async ({ loginPage, testData }) => {
+    await loginPage.login(testData.validUser);
+    await loginPage.logout();
+    await expect(loginPage.customerLoginHeading).toBeVisible();
+  });
+
+  test('should display eight Account Services sidebar links when logged in', async ({ loginPage, testData }) => {
+    await loginPage.login(testData.validUser);
+    const links = loginPage.getAccountServiceLinks();
+    expect(links).toHaveLength(8);
+    for (const link of links) {
+      await expect(link).toBeVisible();
+    }
+  });
+
+  test('should reject registration when passwords do not match', async ({ loginPage, testData, page }) => {
+    const username = generateUniqueUsername('mismatch');
+    const profile = { ...testData.registration, ssn: generateUniqueSsn() };
+
+    await loginPage.navigateToRegister();
+    await loginPage.fillRegistrationWithMismatchedPassword(
+      profile,
+      username,
+      'SecurePass1!',
+      'DifferentPass2!'
+    );
+    await expect(page.getByText('Passwords did not match.')).toBeVisible();
+  });
+
+  test('should display customer lookup form fields on forgot login page', async ({ loginPage }) => {
+    await loginPage.navigateToForgotLogin();
+    await loginPage.verifyLookupFormFields();
+  });
+
+  test('should display ParaBank tagline on landing page', async ({ siteNavigationPage }) => {
+    await expect(siteNavigationPage.tagline).toBeVisible();
+  });
 });

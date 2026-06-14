@@ -6,6 +6,10 @@ import TransferFundsPage from '../pages/TransferPage';
 import BillPayPage from '../pages/BillPayPage';
 import FindTransactionsPage from '../pages/FindTransactionPage';
 import ContactPage from '../pages/ContactPage';
+import AccountActivityPage from '../pages/AccountActivityPage';
+import SiteNavigationPage from '../pages/SiteNavigationPage';
+import RequestLoanPage from '../pages/RequestLoanPage';
+import AboutPage from '../pages/AboutPage';
 import { createScreenshotHelper } from '../utilities/screenshot';
 import { data } from '../utilities/dataParser';
 import { logger } from '../utilities/logger';
@@ -45,6 +49,22 @@ export const test = base.extend({
 
   contactPage: async ({ page }, use) => {
     await use(new ContactPage(page));
+  },
+
+  accountActivityPage: async ({ page }, use) => {
+    await use(new AccountActivityPage(page));
+  },
+
+  siteNavigationPage: async ({ page }, use) => {
+    await use(new SiteNavigationPage(page));
+  },
+
+  requestLoanPage: async ({ page }, use) => {
+    await use(new RequestLoanPage(page));
+  },
+
+  aboutPage: async ({ page }, use) => {
+    await use(new AboutPage(page));
   },
 
   screenshotHelper: async ({}, use, testInfo) => {

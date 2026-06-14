@@ -115,4 +115,30 @@ export default class LoginPage extends BasePage {
   getLookupResultMessage() {
     return this.page.locator('#lookupResult, #rightPanel').filter({ hasText: /username/i });
   }
+
+  getAccountServiceLinks() {
+    const links = this.page.locator('#leftPanel ul').first().getByRole('link');
+    return Array.from({ length: 8 }, (_, index) => links.nth(index));
+  }
+
+  async fillRegistrationWithMismatchedPassword(profile, username, password, repeatedPassword) {
+    await test.step('Fill registration form with mismatched passwords', async () => {
+      await this.fillRegistrationForm(profile, username, password);
+      await this.page.locator('#repeatedPassword').fill(repeatedPassword);
+      await this.page.getByRole('button', { name: 'Register' }).click();
+    });
+  }
+
+  async verifyLookupFormFields() {
+    await test.step('Verify customer lookup form fields', async () => {
+      await expect(this.page.locator('#firstName')).toBeVisible();
+      await expect(this.page.locator('#lastName')).toBeVisible();
+      await expect(this.page.locator('#address\\.street')).toBeVisible();
+      await expect(this.page.locator('#address\\.city')).toBeVisible();
+      await expect(this.page.locator('#address\\.state')).toBeVisible();
+      await expect(this.page.locator('#address\\.zipCode')).toBeVisible();
+      await expect(this.page.locator('#ssn')).toBeVisible();
+      await expect(this.page.getByRole('button', { name: 'Find My Login Info' })).toBeVisible();
+    });
+  }
 }

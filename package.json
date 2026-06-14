@@ -1,7 +1,7 @@
 {
   "name": "parabank-playwright-framework",
   "version": "1.0.0",
-  "description": "Production-ready Playwright TypeScript automation framework for ParaBank",
+  "description": "Production-ready Playwright JavaScript automation framework for ParaBank",
   "scripts": {
     "test": "playwright test --config=playwright.config.js",
     "test:headed": "playwright test --config=playwright.config.js --headed",
@@ -12,15 +12,12 @@
     "allure:generate": "allure generate -o allure-report allure-results",
     "allure:open": "allure open allure-report",
     "test:report": "npm run allure:generate && npm run allure:open",
-    "test:allure": "npm test && npm run test:report",
-    "lint": "tsc --noEmit"
+    "test:allure": "npm test && npm run test:report"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "@types/node": "^22.10.0",
     "allure": "^3.11.0",
     "allure-commandline": "^2.42.1",
-    "allure-playwright": "^3.10.0",
-    "typescript": "^5.7.2"
+    "allure-playwright": "^3.10.0"
   }
 }

@@ -38,4 +38,41 @@ test.describe('Account Balances & Overview', () => {
     expect(newAccountId).toMatch(/^\d+$/);
     await screenshotHelper.captureStep(page, { name: 'account-opened' });
   });
+
+  test('should open a new SAVINGS account successfully', async ({ openAccountPage, testData, page, screenshotHelper }) => {
+    const savingsData = testData.openAccount[1];
+    await openAccountPage.open();
+    await openAccountPage.openNewAccount(savingsData);
+    const accountId = await openAccountPage.verifyAccountOpenedSuccessfully();
+    expect(accountId.length).toBeGreaterThan(0);
+    await screenshotHelper.captureStep(page, { name: 'savings-account-opened' });
+  });
+
+  test('should navigate to Accounts Overview via sidebar link', async ({ accountOverviewPage }) => {
+    await accountOverviewPage.navigateViaSidebar();
+    await expect(accountOverviewPage.overviewHeading).toBeVisible();
+  });
+
+  test('should display transaction rows on account activity page', async ({
+    accountActivityPage,
+    testData,
+    page,
+    screenshotHelper,
+  }) => {
+    await accountActivityPage.openForAccount(testData.findTransactions.accountId);
+    await accountActivityPage.expectActivityTablePopulated();
+    await screenshotHelper.captureStep(page, { name: 'account-activity' });
+  });
+
+  test('should include account id in activity page URL', async ({ accountActivityPage, testData, page }) => {
+    const accountId = testData.findTransactions.accountId;
+    await accountActivityPage.openForAccount(accountId);
+    expect(page.url()).toContain(`id=${accountId}`);
+  });
+
+  test('should set browser title to Accounts Overview on overview page', async ({ accountOverviewPage, page }) => {
+    await accountOverviewPage.open();
+    await expect(page).toHaveTitle(/Accounts Overview/i);
+  });
 });
+

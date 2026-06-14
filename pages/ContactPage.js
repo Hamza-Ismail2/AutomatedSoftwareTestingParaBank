@@ -80,4 +80,21 @@ export default class ContactPage extends BasePage {
       await expect(this.page.locator('#rightPanel')).toContainText('Profile Updated');
     });
   }
+
+  async expectContactSubmissionConfirmation() {
+    await test.step('Verify contact inquiry submission confirmation', async () => {
+      await expect(this.page.locator('#rightPanel')).toContainText(/Thank you/i);
+      await expect(this.page.locator('#rightPanel')).toContainText(/Customer Care Representative will be contacting you/i);
+    });
+  }
+
+  async expectUpdateProfileFormReady() {
+    await test.step('Verify update profile form fields are editable', async () => {
+      await expect(this.page.locator('#customer\\.firstName')).toBeVisible();
+      await expect(this.page.locator('#customer\\.lastName')).toBeVisible();
+      await expect(this.page.locator('#customer\\.address\\.street')).toBeVisible();
+      await expect(this.page.locator('#customer\\.phoneNumber')).toBeVisible();
+      await expect(this.page.getByRole('button', { name: 'Update Profile' })).toBeVisible();
+    });
+  }
 }
