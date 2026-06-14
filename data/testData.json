@@ -1,0 +1,77 @@
+{
+  "baseUrl": "https://parabank.parasoft.com/parabank/",
+  "validUser": {
+    "username": "john",
+    "password": "demo",
+    "fullName": "John Smith"
+  },
+  "invalidCredentials": [
+    { "username": "invalid_user", "password": "wrong_pass", "description": "non-existent user" },
+    { "username": "john", "password": "invalid", "description": "valid user wrong password" },
+    { "username": "", "password": "demo", "description": "empty username" }
+  ],
+  "registration": {
+    "firstName": "Test",
+    "lastName": "Automation",
+    "address": "123 Test Street",
+    "city": "Boston",
+    "state": "MA",
+    "zipCode": "02101",
+    "phone": "555-0100",
+    "ssn": "999-99-9999"
+  },
+  "lookup": {
+    "firstName": "John",
+    "lastName": "Smith",
+    "address": "1431 Main St",
+    "city": "Beverly Hills",
+    "state": "CA",
+    "zipCode": "90210",
+    "phone": "310-447-4121",
+    "ssn": "578-56-7896"
+  },
+  "transferFunds": [
+    {
+      "amount": "50",
+      "fromAccount": "54321",
+      "toAccount": "12789",
+      "description": "standard transfer between funded accounts"
+    },
+    {
+      "amount": "10",
+      "fromAccount": "54321",
+      "toAccount": "12789",
+      "description": "small transfer between funded accounts"
+    }
+  ],
+  "billPay": {
+    "payeeName": "Utility Company",
+    "address": "456 Bill Street",
+    "city": "Boston",
+    "state": "MA",
+    "zipCode": "02102",
+    "phone": "555-0200",
+    "accountNumber": "987654321",
+    "amount": "25.00",
+    "fromAccount": "54321"
+  },
+  "openAccount": [
+    { "accountType": "CHECKING", "fundFromAccount": "54321" },
+    { "accountType": "SAVINGS", "fundFromAccount": "54321" }
+  ],
+  "findTransactions": {
+    "byAmount": "100.00",
+    "byDate": "01-01-2020",
+    "dateRange": { "from": "01-01-2020", "to": "12-31-2025" },
+    "accountId": "54321"
+  },
+  "contactUpdate": {
+    "firstName": "John",
+    "lastName": "Smith",
+    "address": "1431 Main St",
+    "city": "Beverly Hills",
+    "state": "CA",
+    "zipCode": "90210",
+    "phone": "310-447-4121"
+  }
+}
