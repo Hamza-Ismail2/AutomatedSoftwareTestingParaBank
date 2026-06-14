@@ -2,9 +2,6 @@ import { test, expect } from '@playwright/test';
 import BasePage from './BasePage';
 import { logger } from '../utilities/logger';
 
-/**
- * Page object encapsulating authentication, registration, and credential recovery flows.
- */
 export default class LoginPage extends BasePage {
   customerLoginHeading;
   usernameInput;
@@ -14,9 +11,6 @@ export default class LoginPage extends BasePage {
   forgotLoginLink;
   errorMessage;
 
-  /**
-   * @param page - Active Playwright page instance.
-   */
   constructor(page) {
     super(page);
     this.customerLoginHeading = page.getByRole('heading', { name: 'Customer Login', level: 2 });
@@ -28,9 +22,6 @@ export default class LoginPage extends BasePage {
     this.errorMessage = page.locator('.error');
   }
 
-  /**
-   * Opens the ParaBank landing / login page.
-   */
   async open() {
     await test.step('Open ParaBank login page', async () => {
       await this.navigate('/');
@@ -39,10 +30,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Performs a login attempt with the supplied credentials.
-   * @param credentials - Username and password pair.
-   */
   async login(credentials) {
     await test.step(`Login as user: ${credentials.username || '(empty)'}`, async () => {
       logger.step(`Entering credentials for: ${credentials.username}`, 'LoginPage');
@@ -55,9 +42,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Verifies the login form is fully rendered and interactive.
-   */
   async verifyLoginFormVisible() {
     await test.step('Verify Customer Login form is visible', async () => {
       await expect(this.customerLoginHeading).toBeVisible();
@@ -69,9 +53,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Navigates to the registration page via the Register link.
-   */
   async navigateToRegister() {
     await test.step('Navigate to Register page', async () => {
       await this.registerLink.click();
@@ -79,9 +60,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Navigates to the credential lookup / recovery page.
-   */
   async navigateToForgotLogin() {
     await test.step('Navigate to Forgot Login Info page', async () => {
       await this.forgotLoginLink.click();
@@ -89,12 +67,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Completes the full user registration form and submits.
-   * @param profile - Personal and authentication details for the new user.
-   * @param username - Desired username for the new account.
-   * @param password - Desired password for the new account.
-   */
   async registerUser(profile, username, password) {
     await test.step(`Register new user: ${username}`, async () => {
       await this.fillRegistrationForm(profile, username, password);
@@ -102,12 +74,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Fills all registration form fields without submitting.
-   * @param profile - Personal details for registration.
-   * @param username - Desired username.
-   * @param password - Desired password (also used for confirmation).
-   */
   async fillRegistrationForm(profile, username, password) {
     await this.page.locator('#customer\\.firstName').fill(profile.firstName);
     await this.page.locator('#customer\\.lastName').fill(profile.lastName);
@@ -122,11 +88,6 @@ export default class LoginPage extends BasePage {
     await this.page.locator('#repeatedPassword').fill(password);
   }
 
-  /**
-   * Submits the customer lookup form to recover login credentials.
-   * Uses lookup-page-specific field IDs (distinct from the registration form).
-   * @param profile - Personal details matching an existing customer record.
-   */
   async submitCustomerLookup(profile) {
     await test.step('Submit customer lookup for credential recovery', async () => {
       await this.page.locator('#firstName').fill(profile.firstName);
@@ -140,9 +101,6 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Logs out the current authenticated session.
-   */
   async logout() {
     await test.step('Log out of ParaBank', async () => {
       await this.page.getByRole('link', { name: 'Log Out' }).click();
@@ -150,18 +108,10 @@ export default class LoginPage extends BasePage {
     });
   }
 
-  /**
-   * Returns the registration success message locator.
-   * @returns Locator for the post-registration confirmation banner.
-   */
   getRegistrationSuccessMessage() {
     return this.page.locator('#rightPanel').getByText(/Your account was created successfully/i);
   }
 
-  /**
-   * Returns the lookup result message locator containing recovered username.
-   * @returns Locator for the credential recovery result panel.
-   */
   getLookupResultMessage() {
     return this.page.locator('#lookupResult, #rightPanel').filter({ hasText: /username/i });
   }

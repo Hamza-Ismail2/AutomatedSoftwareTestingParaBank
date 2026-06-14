@@ -1,0 +1,79 @@
+import { test, expect, performLogin } from '../fixtures/testSetup';
+import { generateUniqueSsn, generateUniqueUsername } from '../utilities/dataParser';
+
+test.describe('Authentication & Account Creation', () => {
+  test.beforeEach(async ({ loginPage }) => {
+    await loginPage.open();
+  });
+
+  test.afterEach(async ({ page, screenshotHelper }, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      await screenshotHelper.captureOnFailure(page);
+    }
+  });
+
+  test('should display Customer Login form on landing page', async ({ loginPage, screenshotHelper, page }) => {
+    await loginPage.verifyLoginFormVisible();
+    await screenshotHelper.captureStep(page, { name: 'login-form-visible' });
+  });
+
+  test('should login successfully with valid credentials', async ({ loginPage, testData, page }) => {
+    await test.step('Enter credentials and login', async () => {
+      await loginPage.login(testData.validUser);
+    });
+    await test.step('Verify welcome message on landing page', async () => {
+      await expect(page.getByText(`Welcome ${testData.validUser.fullName}`)).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Accounts Overview', level: 1 })).toBeVisible();
+      await loginPage.attachScreenshot('05 - Welcome message displayed');
+    });
+  });
+
+  test('should show error message for invalid login credentials', async ({ loginPage, testData }) => {
+    for (const invalidCred of testData.invalidCredentials) {
+      await performLogin(loginPage, invalidCred);
+      await expect(loginPage.errorMessage).toBeVisible();
+      await expect(loginPage.errorMessage).toContainText(/could not be verified|Please enter a username and password/i);
+    }
+  });
+
+  test('should navigate to Register page from login panel', async ({ loginPage, page, screenshotHelper }) => {
+    await loginPage.navigateToRegister();
+    await expect(page.getByRole('heading', { name: 'Signing up is easy!' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Register' })).toBeVisible();
+    await screenshotHelper.captureStep(page, { name: 'register-page' });
+  });
+
+  test('should register a new user account successfully', async ({ loginPage, testData, page, screenshotHelper }) => {
+    const username = generateUniqueUsername();
+    const password = 'Pass123!';
+    const registrationData = {
+      ...testData.registration,
+      ssn: generateUniqueSsn(),
+    };
+
+    await loginPage.navigateToRegister();
+    await loginPage.registerUser(registrationData, username, password);
+    await expect(loginPage.getRegistrationSuccessMessage()).toBeVisible();
+    await expect(page.getByText(`Welcome ${registrationData.firstName} ${registrationData.lastName}`)).toBeVisible();
+    await screenshotHelper.captureStep(page, { name: 'registration-success' });
+  });
+
+  test('should recover login info via customer lookup form', async ({ loginPage, testData, page, screenshotHelper }) => {
+    const username = generateUniqueUsername();
+    const password = 'Pass123!';
+    const profile = {
+      ...testData.registration,
+      ssn: generateUniqueSsn(),
+    };
+
+    await loginPage.navigateToRegister();
+    await loginPage.registerUser(profile, username, password);
+    await expect(loginPage.getRegistrationSuccessMessage()).toBeVisible();
+    await loginPage.logout();
+
+    await loginPage.navigateToForgotLogin();
+    await loginPage.submitCustomerLookup(profile);
+    await expect(page.getByText(new RegExp(`Username:\\s*${username}`, 'i'))).toBeVisible();
+    await screenshotHelper.captureStep(page, { name: 'lookup-result' });
+  });
+});
