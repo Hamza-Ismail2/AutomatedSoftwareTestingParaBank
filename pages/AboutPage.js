@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import BasePage from './BasePage';
+import BasePage from './BasePage.js';
 
 export default class AboutPage extends BasePage {
   aboutHeading;

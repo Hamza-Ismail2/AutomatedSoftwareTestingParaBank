@@ -1,14 +1,7 @@
 import { test, expect } from '@playwright/test';
-import BasePage from './BasePage';
+import BasePage from './BasePage.js';
 
 export default class TransferFundsPage extends BasePage {
-  pageHeading;
-  amountInput;
-  fromAccountSelect;
-  toAccountSelect;
-  transferButton;
-  resultMessage;
-
   constructor(page) {
     super(page);
     this.pageHeading = page.getByRole('heading', { name: 'Transfer Funds', level: 1 });

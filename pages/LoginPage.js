@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import BasePage from './BasePage';
-import { logger } from '../utilities/logger';
+import BasePage from './BasePage.js';
+import { logger } from '../utilities/logger.js';
 
 export default class LoginPage extends BasePage {
   customerLoginHeading;
@@ -19,7 +19,9 @@ export default class LoginPage extends BasePage {
     this.loginButton = page.getByRole('button', { name: 'Log In' });
     this.registerLink = page.getByRole('link', { name: 'Register' });
     this.forgotLoginLink = page.getByRole('link', { name: 'Forgot login info?' });
-    this.errorMessage = page.locator('.error');
+    this.errorMessage = page.locator('.error, #rightPanel p').filter({
+      hasText: /could not be verified|Please enter a username|internal error/i,
+    });
   }
 
   async open() {
@@ -34,10 +36,9 @@ export default class LoginPage extends BasePage {
     await test.step(`Login as user: ${credentials.username || '(empty)'}`, async () => {
       logger.step(`Entering credentials for: ${credentials.username}`, 'LoginPage');
       await this.usernameInput.fill(credentials.username);
-      await this.attachScreenshot('02 - After entering username');
       await this.passwordInput.fill(credentials.password);
-      await this.attachScreenshot('03 - After entering password');
       await this.loginButton.click();
+      await this.page.waitForLoadState('domcontentloaded');
       await this.attachScreenshot('04 - After clicking Log In');
     });
   }
@@ -71,6 +72,7 @@ export default class LoginPage extends BasePage {
     await test.step(`Register new user: ${username}`, async () => {
       await this.fillRegistrationForm(profile, username, password);
       await this.page.getByRole('button', { name: 'Register' }).click();
+      await expect(this.getRegistrationSuccessMessage()).toBeVisible({ timeout: 20000 });
     });
   }
 

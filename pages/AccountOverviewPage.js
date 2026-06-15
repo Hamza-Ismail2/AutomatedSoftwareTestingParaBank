@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import BasePage from './BasePage';
-import { logger } from '../utilities/logger';
+import BasePage from './BasePage.js';
+import { logger } from '../utilities/logger.js';
 
 export default class AccountOverviewPage extends BasePage {
   overviewHeading;
@@ -61,5 +61,19 @@ export default class AccountOverviewPage extends BasePage {
 
   getAccountBalance(accountId) {
     return this.accountsTable.locator('tbody tr').filter({ hasText: accountId }).locator('td').nth(1);
+  }
+
+  async getAccountIds() {
+    await expect(this.accountsTable).toBeVisible();
+    const accountLinks = this.accountsTable.locator('tbody tr td a');
+    const count = await accountLinks.count();
+    const ids = [];
+    for (let index = 0; index < count; index += 1) {
+      const accountId = (await accountLinks.nth(index).textContent())?.trim();
+      if (accountId && /^\d+$/.test(accountId)) {
+        ids.push(accountId);
+      }
+    }
+    return ids;
   }
 }

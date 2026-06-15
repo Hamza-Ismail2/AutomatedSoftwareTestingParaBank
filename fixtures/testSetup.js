@@ -1,23 +1,20 @@
 import { test as base, expect } from '@playwright/test';
-import LoginPage from '../pages/LoginPage';
-import AccountOverviewPage from '../pages/AccountOverviewPage';
-import OpenAccountPage from '../pages/OpenAccountPage';
-import TransferFundsPage from '../pages/TransferPage';
-import BillPayPage from '../pages/BillPayPage';
-import FindTransactionsPage from '../pages/FindTransactionPage';
-import ContactPage from '../pages/ContactPage';
-import AccountActivityPage from '../pages/AccountActivityPage';
-import SiteNavigationPage from '../pages/SiteNavigationPage';
-import RequestLoanPage from '../pages/RequestLoanPage';
-import AboutPage from '../pages/AboutPage';
-import { createScreenshotHelper } from '../utilities/screenshot';
-import { data } from '../utilities/dataParser';
-import { logger } from '../utilities/logger';
+import LoginPage from '../pages/LoginPage.js';
+import AccountOverviewPage from '../pages/AccountOverviewPage.js';
+import OpenAccountPage from '../pages/OpenAccountPage.js';
+import TransferFundsPage from '../pages/TransferFundsPage.js';
+import BillPayPage from '../pages/BillPayPage.js';
+import FindTransactionsPage from '../pages/FindTransactionPage.js';
+import ContactPage from '../pages/ContactPage.js';
+import AccountActivityPage from '../pages/AccountActivityPage.js';
+import SiteNavigationPage from '../pages/SiteNavigationPage.js';
+import RequestLoanPage from '../pages/RequestLoanPage.js';
+import AboutPage from '../pages/AboutPage.js';
+import { createScreenshotHelper } from '../utilities/screenshot.js';
+import { data } from '../utilities/dataParser.js';
+import { logger } from '../utilities/logger.js';
+import { establishAuthenticatedSession, isAuthenticated, registerFreshUser } from '../utilities/authHelper.js';
 
-/**
- * Custom test fixture extending Playwright's base execution context with
- * pre-initialized page objects, external test data, and screenshot hooks.
- */
 export const test = base.extend({
   testData: async ({}, use) => {
     await use(data);
@@ -72,23 +69,47 @@ export const test = base.extend({
     await use(helper);
   },
 
-  /**
-   * Provides a pre-authenticated session using the default valid user from testData.json.
-   */
   authenticatedPage: async ({ page, loginPage, testData: td }, use) => {
-    await loginPage.open();
-    await loginPage.login(td.validUser);
-    await expect(page.getByText(`Welcome ${td.validUser.fullName}`)).toBeVisible();
-    logger.info(`Authenticated as ${td.validUser.username}`, 'testSetup');
+    const session = await establishAuthenticatedSession(page, loginPage, td);
+    await expect(loginPage.getWelcomeMessage()).toContainText(session.fullName, { timeout: 15000 });
     await use(loginPage);
+  },
+
+  sessionAccounts: async ({ authenticatedPage, accountOverviewPage, openAccountPage }, use) => {
+    void authenticatedPage;
+    await accountOverviewPage.open();
+    await accountOverviewPage.verifyAccountsTableVisible();
+    let accountIds = await accountOverviewPage.getAccountIds();
+
+    if (accountIds.length < 2 && accountIds.length > 0) {
+      await openAccountPage.open();
+      const fundOptionCount = await openAccountPage.fundFromAccountSelect.locator('option').count();
+      if (fundOptionCount > 0) {
+        await openAccountPage.openNewAccount({
+          accountType: 'CHECKING',
+          fundFromAccount: accountIds[0],
+        });
+        const newAccountId = await openAccountPage.verifyAccountOpenedSuccessfully();
+        if (newAccountId && !accountIds.includes(newAccountId)) {
+          accountIds.push(newAccountId);
+        }
+        await accountOverviewPage.open();
+        accountIds = await accountOverviewPage.getAccountIds();
+      }
+    }
+
+    if (accountIds.length === 0) {
+      throw new Error('No accounts were found for the authenticated ParaBank session.');
+    }
+
+    await use({
+      primaryAccount: accountIds[0],
+      secondaryAccount: accountIds[1] ?? accountIds[0],
+      accountId: accountIds[0],
+    });
   },
 });
 
-/**
- * Performs a login using arbitrary credentials — utility for auth test scenarios.
- * @param loginPage - LoginPage instance bound to the active browser tab.
- * @param credentials - Username and password to authenticate with.
- */
 export async function performLogin(loginPage, credentials) {
   await loginPage.open();
   await loginPage.login(credentials);

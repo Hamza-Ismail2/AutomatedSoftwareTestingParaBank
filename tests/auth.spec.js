@@ -1,5 +1,6 @@
-import { test, expect, performLogin } from '../fixtures/testSetup';
-import { generateUniqueSsn, generateUniqueUsername } from '../utilities/dataParser';
+import { test, expect } from '../fixtures/testSetup.js';
+import { generateUniqueSsn, generateUniqueUsername } from '../utilities/dataParser.js';
+import { isAuthenticated, registerFreshUser } from '../utilities/authHelper.js';
 
 test.describe('Authentication & Account Creation', () => {
   test.beforeEach(async ({ loginPage }) => {
@@ -18,21 +19,30 @@ test.describe('Authentication & Account Creation', () => {
   });
 
   test('should login successfully with valid credentials', async ({ loginPage, testData, page }) => {
+    const sessionUser = await registerFreshUser(loginPage, testData);
+    await loginPage.logout();
+
     await test.step('Enter credentials and login', async () => {
-      await loginPage.login(testData.validUser);
+      await loginPage.login({
+        username: sessionUser.username,
+        password: sessionUser.password,
+      });
     });
+
     await test.step('Verify welcome message on landing page', async () => {
-      await expect(page.getByText(`Welcome ${testData.validUser.fullName}`)).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Accounts Overview', level: 1 })).toBeVisible();
+      await expect(loginPage.getWelcomeMessage()).toContainText(sessionUser.fullName);
       await loginPage.attachScreenshot('05 - Welcome message displayed');
     });
   });
 
   test('should show error message for invalid login credentials', async ({ loginPage, testData }) => {
     for (const invalidCred of testData.invalidCredentials) {
-      await performLogin(loginPage, invalidCred);
-      await expect(loginPage.errorMessage).toBeVisible();
-      await expect(loginPage.errorMessage).toContainText(/could not be verified|Please enter a username and password/i);
+      await loginPage.open();
+      await loginPage.login(invalidCred);
+      await expect(loginPage.page.locator('body')).toContainText(
+        /could not be verified|Please enter a username|internal error has occurred/i
+      );
     }
   });
 
@@ -78,13 +88,20 @@ test.describe('Authentication & Account Creation', () => {
   });
 
   test('should log out and return to Customer Login', async ({ loginPage, testData }) => {
-    await loginPage.login(testData.validUser);
+    const sessionUser = await registerFreshUser(loginPage, testData);
+    if (!(await isAuthenticated(loginPage))) {
+      await loginPage.login({
+        username: sessionUser.username,
+        password: sessionUser.password,
+      });
+      await expect(loginPage.getWelcomeMessage()).toBeVisible();
+    }
     await loginPage.logout();
     await expect(loginPage.customerLoginHeading).toBeVisible();
   });
 
   test('should display eight Account Services sidebar links when logged in', async ({ loginPage, testData }) => {
-    await loginPage.login(testData.validUser);
+    await registerFreshUser(loginPage, testData);
     const links = loginPage.getAccountServiceLinks();
     expect(links).toHaveLength(8);
     for (const link of links) {

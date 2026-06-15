@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import testData from '../data/testData.json';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function loadTestData(filePath) {
   const resolvedPath = filePath ?? path.join(__dirname, '..', 'data', 'testData.json');
@@ -8,7 +10,7 @@ export function loadTestData(filePath) {
   return JSON.parse(raw);
 }
 
-export const data = testData;
+export const data = loadTestData();
 
 export function generateUniqueUsername(prefix = 'auto') {
   return `${prefix}_${Date.now()}`;

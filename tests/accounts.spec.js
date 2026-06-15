@@ -1,8 +1,9 @@
-import { test, expect } from '../fixtures/testSetup';
+import { test, expect } from '../fixtures/testSetup.js';
 
 test.describe('Account Balances & Overview', () => {
-  test.beforeEach(async ({ authenticatedPage, accountOverviewPage }) => {
+  test.beforeEach(async ({ authenticatedPage, accountOverviewPage, sessionAccounts }) => {
     void authenticatedPage;
+    void sessionAccounts;
     await accountOverviewPage.open();
   });
 
@@ -18,9 +19,14 @@ test.describe('Account Balances & Overview', () => {
     await screenshotHelper.captureStep(page, { name: 'accounts-overview' });
   });
 
-  test('should display account numbers and balances in the table', async ({ accountOverviewPage, page, screenshotHelper }) => {
+  test('should display account numbers and balances in the table', async ({
+    accountOverviewPage,
+    sessionAccounts,
+    page,
+    screenshotHelper,
+  }) => {
     await accountOverviewPage.verifyAccountsTableVisible();
-    await expect(accountOverviewPage.getAccountBalance('54321')).toContainText('$');
+    await expect(accountOverviewPage.getAccountBalance(sessionAccounts.primaryAccount)).toContainText('$');
     await screenshotHelper.captureStep(page, { name: 'account-balances' });
   });
 
@@ -29,8 +35,13 @@ test.describe('Account Balances & Overview', () => {
     await screenshotHelper.captureStep(page, { name: 'total-balance' });
   });
 
-  test('should open a new CHECKING account successfully', async ({ openAccountPage, testData, page, screenshotHelper }) => {
-    const accountData = testData.openAccount[0];
+  test('should open a new CHECKING account successfully', async ({
+    openAccountPage,
+    sessionAccounts,
+    page,
+    screenshotHelper,
+  }) => {
+    const accountData = { accountType: 'CHECKING', fundFromAccount: sessionAccounts.primaryAccount };
     await openAccountPage.open();
     await openAccountPage.verifyFormVisible();
     await openAccountPage.openNewAccount(accountData);
@@ -39,8 +50,13 @@ test.describe('Account Balances & Overview', () => {
     await screenshotHelper.captureStep(page, { name: 'account-opened' });
   });
 
-  test('should open a new SAVINGS account successfully', async ({ openAccountPage, testData, page, screenshotHelper }) => {
-    const savingsData = testData.openAccount[1];
+  test('should open a new SAVINGS account successfully', async ({
+    openAccountPage,
+    sessionAccounts,
+    page,
+    screenshotHelper,
+  }) => {
+    const savingsData = { accountType: 'SAVINGS', fundFromAccount: sessionAccounts.primaryAccount };
     await openAccountPage.open();
     await openAccountPage.openNewAccount(savingsData);
     const accountId = await openAccountPage.verifyAccountOpenedSuccessfully();
@@ -55,17 +71,17 @@ test.describe('Account Balances & Overview', () => {
 
   test('should display transaction rows on account activity page', async ({
     accountActivityPage,
-    testData,
+    sessionAccounts,
     page,
     screenshotHelper,
   }) => {
-    await accountActivityPage.openForAccount(testData.findTransactions.accountId);
+    await accountActivityPage.openForAccount(sessionAccounts.accountId);
     await accountActivityPage.expectActivityTablePopulated();
     await screenshotHelper.captureStep(page, { name: 'account-activity' });
   });
 
-  test('should include account id in activity page URL', async ({ accountActivityPage, testData, page }) => {
-    const accountId = testData.findTransactions.accountId;
+  test('should include account id in activity page URL', async ({ accountActivityPage, sessionAccounts, page }) => {
+    const accountId = sessionAccounts.accountId;
     await accountActivityPage.openForAccount(accountId);
     expect(page.url()).toContain(`id=${accountId}`);
   });
@@ -75,4 +91,3 @@ test.describe('Account Balances & Overview', () => {
     await expect(page).toHaveTitle(/Accounts Overview/i);
   });
 });
-

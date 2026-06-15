@@ -1,9 +1,7 @@
 import { test } from '@playwright/test';
-import { logger } from '../utilities/logger';
+import { logger } from '../utilities/logger.js';
 
 export default class BasePage {
-  page;
-
   constructor(page) {
     this.page = page;
   }
@@ -39,7 +37,7 @@ export default class BasePage {
   }
 
   getWelcomeMessage() {
-    return this.page.getByText(/^Welcome\s+/);
+    return this.page.locator('#leftPanel').getByText(/^Welcome\s+/);
   }
 
   getAccountServicesHeading() {

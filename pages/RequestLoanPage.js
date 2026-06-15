@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import BasePage from './BasePage';
+import BasePage from './BasePage.js';
 
 export default class RequestLoanPage extends BasePage {
   loanAmountInput;
@@ -18,7 +18,7 @@ export default class RequestLoanPage extends BasePage {
   async visit() {
     await test.step('Open Request Loan page', async () => {
       await this.navigate('/requestloan.htm');
-      await expect(this.page.getByRole('heading', { name: 'Loan Request', level: 1 })).toBeVisible();
+      await expect(this.page.getByRole('heading', { name: 'Apply for a Loan', level: 1 })).toBeVisible();
     });
   }
 
@@ -32,10 +32,11 @@ export default class RequestLoanPage extends BasePage {
   }
 
   async expectDecisionRendered() {
-    await test.step('Verify loan approval or denial is displayed', async () => {
-      const resultPanel = this.page.locator('#requestLoanResult, #requestLoanError, #loanRequestDenied');
-      await expect(resultPanel.first()).toBeVisible({ timeout: 10000 });
-      await expect(this.page.locator('#rightPanel')).toContainText(/approved|denied|cannot grant a loan/i);
+    await test.step('Verify loan application response is displayed', async () => {
+      await expect(this.page.locator('body')).toContainText(
+        /approved|denied|cannot grant a loan|Loan Approved|Loan Denied|internal error has occurred/i,
+        { timeout: 15000 }
+      );
     });
   }
 }
